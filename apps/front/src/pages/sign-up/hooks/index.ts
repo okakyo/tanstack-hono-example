@@ -1,0 +1,1 @@
+export { useSignUpPageHooks } from "./useSignUpPageHooks";

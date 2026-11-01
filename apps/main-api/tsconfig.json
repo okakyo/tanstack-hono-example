@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "outDir": "./dist",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@db/*": ["./drizzle/*"]
+    },
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "resolveJsonModule": true,
+    "declaration": true,
+    "composite": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "drizzle/**/*.ts",
+    "vitest.setup.ts",
+    "src/libs/env.ts"
+  ],
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts", "src/**/__test__/**"]
+}

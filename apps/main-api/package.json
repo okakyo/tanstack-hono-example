@@ -1,0 +1,68 @@
+{
+  "name": "@repo/main-api",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/client.js",
+  "types": "./dist/src/client.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/client.d.ts",
+      "import": "./dist/src/client.js",
+      "default": "./dist/src/client.js"
+    },
+    "./server": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js",
+      "default": "./dist/src/index.js"
+    },
+    "./schema": {
+      "types": "./dist/src/schema.d.ts",
+      "import": "./dist/src/schema.js",
+      "default": "./dist/src/schema.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup",
+    "biome:ci": "biome ci",
+    "lint": "pnpm check-types && biome check src",
+    "format": "pnpm check-types && biome check src --fix",
+    "check-types": "tsc -b --noEmit",
+    "test": "vitest run",
+    "drizzle": "NODE_OPTIONS='--import tsx' drizzle-kit --config src/libs/configs/drizzle/drizzle.config.ts",
+    "drizzle:meta:reset": "rm -rf drizzle/migrations/meta && mkdir -p drizzle/migrations/meta && printf '%s\\n' '{\"version\":\"7\",\"dialect\":\"postgresql\",\"entries\":[]}' > drizzle/migrations/meta/_journal.json",
+    "drizzle:generate": "NODE_OPTIONS='--import tsx' drizzle-kit generate --config src/libs/configs/drizzle/drizzle.config.ts",
+    "drizzle:generate:clean": "pnpm drizzle:meta:reset && pnpm drizzle:generate",
+    "drizzle:migrate": "NODE_OPTIONS='--import tsx' drizzle-kit migrate --config src/libs/configs/drizzle/drizzle.config.ts",
+    "drizzle:studio": "NODE_OPTIONS='--import tsx' drizzle-kit studio --config src/libs/configs/drizzle/drizzle.config.ts",
+    "drizzle:introspect": "NODE_OPTIONS='--import tsx' drizzle-kit introspect --config src/libs/configs/drizzle/drizzle.config.ts",
+    "drizzle:squash": "NODE_OPTIONS='--import tsx' drizzle-kit squash --config src/libs/configs/drizzle/drizzle.config.ts",
+    "drizzle:seed": "tsx ./drizzle/seed.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.0",
+    "@hono/valibot-validator": "^0.5.2",
+    "@supabase/supabase-js": "^2.90.1",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.11.5",
+    "neverthrow": "^8.2.0",
+    "pg": "^8.22.0",
+    "pino": "^9.6.0",
+    "postgres": "^3.4.5",
+    "uuid": "^11.1.0",
+    "valibot": "1.1.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.5",
+    "@faker-js/faker": "^9.6.0",
+    "@types/node": "^20.17.28",
+    "@types/pg": "^8.11.11",
+    "drizzle-kit": "^0.31.10",
+    "drizzle-seed": "^0.3.1",
+    "tsup": "^8.5.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
+  }
+}

@@ -1,0 +1,53 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Docs/テスト" />
+
+# テストルール
+
+## テスト対象のコードについて
+
+フロントエンドでは以下のライブラリを利用したテストを行います。
+
+- Vitest
+- Playwright
+- MSW
+- @storybook/experimental-addon-test
+
+### UI コンポーネント
+
+UI コンポーネントでは、Vitest Browser Mode を利用してテストを行います。
+このツールを利用することにより、Storybook 上でテスト環境を試すことができるだけでなく、
+CI 環境でのテストも行うことができます。
+
+対象となるコードは以下のとおりです。
+
+- `shared/ui/**`
+- `widgets/**`
+- `pages/**`
+
+### E2E テスト
+
+E2E テストでは、Playwright, MSW を利用してテストを行います。
+E2E テストは、テスト用のAPI を起動して動作確認を行います。
+
+対象となるコードは以下のとおりです。
+
+- `apps/routes/**`
+
+## テストの実装方法
+
+E2E テストの実装方法は以下のとおりです。
+
+## テストの実行方法
+
+### UI コンポーネントのテスト
+
+```bash
+pnpm test:ui
+```
+
+### E2E テストのテスト
+
+```bash
+pnpm test:e2e
+```

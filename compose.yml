@@ -1,0 +1,72 @@
+services:
+  db:
+    image: postgres:17
+    container_name: template-db-v2
+    ports:
+      - 5432:5432
+    volumes:
+      - db-store:/var/lib/postgresql/data
+      - ./db/script:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_DB: dev
+      POSTGRES_PASSWORD: password
+
+  redis:
+    image: redis:7.0
+    container_name: template-redis-v2
+    command:
+      - redis-server
+      - /usr/local/etc/redis/redis.conf
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-store:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    container_name: seaweedfs-test-v2
+
+    ports:
+      # Master
+      - "9333:9333"
+
+      # Volume Server
+      - "9340:9340"
+
+      # Filer
+      - "8888:8888"
+
+      # S3 API
+      - "8333:8333"
+
+      # WebDAV
+      - "7333:7333"
+
+      # Admin UI
+      - "23646:23646"
+
+    environment:
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: secret
+
+      # 起動時に作成するバケット
+      S3_BUCKET: app-storage
+
+    volumes:
+      - seaweedfs-store:/data
+
+    command:
+      - mini
+      - -dir=/data
+
+    restart: unless-stopped
+
+volumes:
+  db-store:
+  redis-store:
+    driver: local
+  seaweedfs-store:
+    driver: local
+
