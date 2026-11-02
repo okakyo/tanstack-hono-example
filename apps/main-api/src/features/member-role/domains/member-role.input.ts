@@ -1,12 +1,23 @@
 import * as v from "valibot";
 
+const INVALID_INTEGER_MESSAGE = "整数を指定してください";
+const MIN_PAGE_VALUE = 1;
+const MAX_LIMIT_VALUE = 100;
+
+const queryIntegerSchema = v.pipe(
+  v.union([v.string(), v.number()]),
+  v.transform((input) => (typeof input === "number" ? input : Number(input))),
+  v.check((input) => Number.isInteger(input), INVALID_INTEGER_MESSAGE),
+  v.minValue(MIN_PAGE_VALUE),
+);
+
 /**
  * 境界層の DTO。
  * HTTP / repository とやり取りする最小の入力契約。
  */
 export const getMemberRolesQueryDtoSchema = v.object({
-  limit: v.optional(v.pipe(v.number(), v.minValue(1), v.maxValue(100))),
-  page: v.optional(v.pipe(v.number(), v.minValue(1))),
+  limit: v.optional(v.pipe(queryIntegerSchema, v.maxValue(MAX_LIMIT_VALUE))),
+  page: v.optional(queryIntegerSchema),
   sortBy: v.optional(v.string()),
   orderBy: v.optional(v.union([v.literal("asc"), v.literal("desc")])),
   role: v.optional(v.string()),

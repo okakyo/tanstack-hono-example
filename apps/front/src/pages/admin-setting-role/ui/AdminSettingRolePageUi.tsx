@@ -20,6 +20,8 @@ export const AdminSettingRolePageUi = (props: AdminSettingRolePageProps) => {
         data={props.data}
         columns={props.columns}
         totalCount={props.totalCount}
+        page={props.page}
+        onPageChange={props.onPageChange}
         isLoading={props.isLoading}
         error={props.error}
         onSortChange={props.onSortChange}

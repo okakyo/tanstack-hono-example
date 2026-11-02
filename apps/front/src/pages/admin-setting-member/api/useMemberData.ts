@@ -20,27 +20,50 @@ export const useMemberData = (queryParams: {
   const { executeWithAutoReauth } = useAuthApiRequest();
   const { currentTenantId } = useAuth();
 
-  type MembersGet = typeof honoApiClient.members.$get;
+  type MembersGetResponse = InferResponseType<
+    typeof honoApiClient.members.$get,
+    200
+  >;
 
   const {
-    data: members = [],
+    data: memberPage = { data: [], totalCount: 0 },
     isLoading,
     error,
     isFetching,
-  } = useQuery<InferResponseType<MembersGet, 200>["data"], Error>({
-    queryKey: ["memberList", currentTenantId ?? queryParams.tenantId],
+  } = useQuery<{ data: MembersGetResponse["data"]; totalCount: number }, Error>({
+    queryKey: [
+      "memberList",
+      currentTenantId ?? queryParams.tenantId,
+      queryParams.page,
+      queryParams.searchText,
+      queryParams.sortBy.field,
+      queryParams.sortBy.order,
+    ],
     queryFn: async () => {
       const response = await executeWithAutoReauth(
         (headers) =>
           honoApiClient.members.$get(
             {
-              query: {},
+              query: {
+                limit: "10",
+                page: String(queryParams.page),
+                sortBy: queryParams.sortBy.field,
+                orderBy: queryParams.sortBy.order,
+              },
             },
             { headers },
           ),
         async (result) => {
+          const getTotalCount = result.headers.get("X-Total-Count");
+          const totalCount = getTotalCount
+            ? Number.parseInt(getTotalCount, 10)
+            : 0;
           const payload = await result.json();
-          return payload.data ?? [];
+
+          return {
+            data: payload.data ?? [],
+            totalCount,
+          };
         },
         {
           tenantId: queryParams.tenantId,
@@ -50,12 +73,13 @@ export const useMemberData = (queryParams: {
 
       return response;
     },
+    placeholderData: (previousData) => previousData,
     enabled: !!queryParams.accessToken && !queryParams.authLoading,
   });
 
   return {
-    members,
-    totalCount: members.length,
+    members: memberPage.data ?? [],
+    totalCount: memberPage.totalCount ?? 0,
     isLoading: queryParams.authLoading || isLoading,
     isFetching,
     error,

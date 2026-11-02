@@ -11,4 +11,6 @@ export type AdminSettingRolePageProps = {
   onSortChange: (sortBy: { field: string; order: "asc" | "desc" }) => void;
   sortState: { field: string; order: "asc" | "desc" } | null;
   totalCount: number;
+  page: number;
+  onPageChange: (page: number) => void;
 };

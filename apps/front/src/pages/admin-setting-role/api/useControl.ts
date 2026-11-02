@@ -13,6 +13,7 @@ export const useTableControls = () => {
     field: "role",
     order: "asc",
   });
+  const [page, setPage] = useState(1);
 
   const handleDebounce = debounce((value: string) => {
     setSearchText(value);
@@ -21,6 +22,7 @@ export const useTableControls = () => {
   const onSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       handleDebounce(e.target.value);
+      setPage(1);
     },
     [handleDebounce],
   );
@@ -28,9 +30,14 @@ export const useTableControls = () => {
   const onSortChange = useCallback(
     (nextSort: { field: string; order: "asc" | "desc" }) => {
       setSortBy(nextSort);
+      setPage(1);
     },
     [],
   );
+
+  const onPageChange = useCallback((nextPage: number) => {
+    setPage(nextPage);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -42,8 +49,10 @@ export const useTableControls = () => {
     queryParams: {
       searchText,
       sortBy,
+      page,
     },
     onSearch,
     onSortChange,
+    onPageChange,
   };
 };
