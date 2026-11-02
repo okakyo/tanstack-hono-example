@@ -15,4 +15,10 @@
  * 
  */
 
-export const AccountListSeed = [];
+type AccountSeed = {
+	authUserId: string;
+	name: string;
+	email: string;
+};
+
+export const AccountListSeed: AccountSeed[] = [];

@@ -107,7 +107,7 @@ export const latestAccessedTenant = pgTable("latest_accessed_tenant", {
 	createdBy: uuid("created_by").default(sql`'00000000-0000-0000-0000-000000000000'`).notNull(),
 	updatedBy: uuid("updated_by").default(sql`'00000000-0000-0000-0000-000000000000'`).notNull(),
 }, (table) => [
-	index("idx_user_accessed_at").using("btree", table.userId.asc().nullsLast().op("uuid_ops"), table.accessedAt.desc().nullsFirst().op("uuid_ops")),
+	index("idx_user_accessed_at").using("btree", table.userId.asc().nullsLast().op("uuid_ops"), table.accessedAt.desc().nullsFirst()),
 	foreignKey({
 			columns: [table.userId],
 			foreignColumns: [user.id],

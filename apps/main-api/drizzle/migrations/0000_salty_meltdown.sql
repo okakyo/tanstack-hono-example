@@ -178,7 +178,7 @@ ALTER TABLE "member" ADD CONSTRAINT "member_company_id_company_id_fk" FOREIGN KE
 ALTER TABLE "member" ADD CONSTRAINT "member_invite_status_id_invite_status_id_fk" FOREIGN KEY ("invite_status_id") REFERENCES "public"."invite_status"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "profile" ADD CONSTRAINT "profile_member_id_member_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."member"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "profile" ADD CONSTRAINT "profile_tenant_id_tenant_id_fk" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenant"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "idx_user_accessed_at" ON "latest_accessed_tenant" USING btree ("user_id" uuid_ops,"accessed_at" uuid_ops);--> statement-breakpoint
+CREATE INDEX "idx_user_accessed_at" ON "latest_accessed_tenant" USING btree ("user_id" uuid_ops,"accessed_at");--> statement-breakpoint
 CREATE POLICY "company_tenant_isolation" ON "company" AS PERMISSIVE FOR ALL TO public USING ((((tenant_id)::text = current_setting('app.current_tenant_id'::text, true)) AND (NOT (EXISTS ( SELECT 1
    FROM company_deleted cd
   WHERE (((cd.company_id)::text = (company.id)::text) AND ((cd.tenant_id)::text = current_setting('app.current_tenant_id'::text, true)))))))) WITH CHECK (((tenant_id)::text = current_setting('app.current_tenant_id'::text, true)));--> statement-breakpoint

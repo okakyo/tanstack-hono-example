@@ -472,8 +472,7 @@
               "expression": "accessed_at",
               "isExpression": false,
               "asc": false,
-              "nulls": "first",
-              "opclass": "uuid_ops"
+              "nulls": "first"
             }
           ],
           "isUnique": false,

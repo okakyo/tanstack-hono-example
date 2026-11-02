@@ -10,7 +10,7 @@ import { AccountListSeed } from "./accountList";
 dotenv.config();
 
 const TENANT_COUNT = 3;
-const USERS_PER_TENANT = 5;
+const USERS_PER_TENANT = 20;
 
 const isFirstTenant = (index: number) => index === 0;
 
@@ -88,37 +88,41 @@ const createCompany = async (
 };
 
 const createUsers = async (tx: Transaction, count: number) => {
-
-   
   // 追加アカウントがあれば `accountList.ts` にアカウントを追加する
-  // const accountList = AccountListSeed.map((account) => ({
-  //   id: fakerJA.string.uuid(),
-  //   authUserId: account.authUserId,
-  //   name: account.name,
-  //   email: account.email,
-  // }));
+  const accountList = AccountListSeed.map((account) => ({
+    id: fakerJA.string.uuid(),
+    authUserId: account.authUserId,
+    name: account.name,
+    email: account.email,
+    isAdmin: true,
+  }));
 
   const users = [
-    // ...accountList,
+    ...accountList,
     ...Array.from({ length: count }, (_, index) => ({
       id: fakerJA.string.uuid(),
       authUserId: fakerJA.string.uuid(),
       name: `メンバー${index + 1}`,
-      email: `member-${fakerJA.string.uuid()}-${index + 1}@example.com`,
+      email: `account-${index + 1}@example.com`,
+      isAdmin: false,
     })),
   ];
 
   const insertedUsers = await tx.insert(schema.user).values(users).returning();
   console.log(`✓ ${insertedUsers.length}件のユーザーを作成しました`);
-  return insertedUsers;
+  return insertedUsers.map((user) => ({
+    ...user,
+    isAdmin: users.find((sourceUser) => sourceUser.id === user.id)?.isAdmin ?? false,
+  }));
 };
 
 const createMembers = async (
   tx: Transaction,
-  users: Array<{ id: string }>,
+  users: Array<{ id: string; isAdmin: boolean }>,
   tenantId: string,
   companyId: string,
-  memberRoleId: string,
+  adminMemberRoleId: string,
+  generalMemberRoleId: string,
   inviteStatusId: string,
 ) => {
   const members = users.map((user) => ({
@@ -126,7 +130,7 @@ const createMembers = async (
     tenantId,
     userId: user.id,
     companyId,
-    memberRoleId,
+    memberRoleId: user.isAdmin ? adminMemberRoleId : generalMemberRoleId,
     inviteStatusId,
   }));
 
@@ -255,6 +259,10 @@ export async function runSeed() {
       const joinedStatus = inviteStatuses.find(
         (status) => status.name === "参加済み",
       );
+      const adminMemberRole = memberRoles.find((role) => role.role === "管理者");
+      const generalMemberRole = memberRoles.find(
+        (role) => role.role === "一般ユーザー",
+      );
 
       // ユーザー（アカウント情報を保持するDB データ群）を作成
       const users = await createUsers(tx, USERS_PER_TENANT);
@@ -267,6 +275,12 @@ export async function runSeed() {
         }
         if (!joinedStatus) {
           throw new Error("参加済みの招待ステータスが見つかりませんでした。");
+        }
+        if (!adminMemberRole) {
+          throw new Error("管理者ロールが見つかりませんでした。");
+        }
+        if (!generalMemberRole) {
+          throw new Error("一般ユーザーロールが見つかりませんでした。");
         }
 
         // テナント情報、親会社情報を作成
@@ -290,7 +304,8 @@ export async function runSeed() {
           users,
           tenant.id,
           parentCompany.id,
-          memberRoles[0].id,
+          adminMemberRole.id,
+          generalMemberRole.id,
           joinedStatus.id,
         );
       }
