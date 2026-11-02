@@ -2,10 +2,7 @@ import { Box, Icon, Text } from "@chakra-ui/react";
 import { useMatchRoute } from "@tanstack/react-router";
 import { useAuth } from "@/shareds/provider";
 import { BaseLink } from "@/shareds/ui/base-link";
-import {
-  getSidebarItems,
-  isSettingsSidebarRoute,
-} from "./sidebar.const";
+import { getSidebarItems, isSettingsSidebarRoute } from "./sidebar.const";
 
 export const TheSidebar = () => {
   const matchRoute = useMatchRoute();

@@ -114,8 +114,10 @@ export const BaseTable = <TData extends { id: string }>({
       table: TableType<TData>;
       onClickRow: (id: string) => void;
     }) => {
+      const rowCount = table.getRowModel().rows.length;
+
       // 初回ロード時のみSpinnerを表示（データが空の場合）
-      if (isLoading && table.getRowModel().rows.length === 0)
+      if (isLoading && rowCount === 0)
         return (
           <Table.Row>
             <Table.Cell justifyItems="center" colSpan={5} rowSpan={3}>
@@ -125,14 +127,26 @@ export const BaseTable = <TData extends { id: string }>({
             </Table.Cell>
           </Table.Row>
         );
-      if (error)
+
+      // 取得完了後に結果が0件なら、エラー表示ではなく空データメッセージを出す
+      if (!isLoading && rowCount === 0) {
         return (
           <Table.Row>
             <Table.Cell justifyItems="center" colSpan={5} rowSpan={3}>
-              <Text>{error.message}</Text>
+              <Flex width="full" justify="center">
+                <Text fontSize="sm" color="gray.500">
+                  該当するデータがありません。
+                </Text>
+              </Flex>
             </Table.Cell>
           </Table.Row>
         );
+      }
+
+      if (error) {
+        return null;
+      }
+
       return (
         <>
           {table.getRowModel().rows.map((row) => {

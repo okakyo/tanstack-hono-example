@@ -50,6 +50,7 @@ export const AdminSettingCompanyPageUi = (
             rounded="md"
             placeholder="企業名（部分一致）"
             aria-label="企業名検索"
+            value={props.searchText}
             onChange={props.onSearch}
           />
         </InputGroup>

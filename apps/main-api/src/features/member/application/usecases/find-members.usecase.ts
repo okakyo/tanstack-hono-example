@@ -1,6 +1,6 @@
 import * as schema from "@db/migrations/schema";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, ilike } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import type { Result } from "neverthrow";
 import { err, ok } from "neverthrow";
@@ -29,6 +29,7 @@ export const findMembersUsecase = async (
     const page = input.page ?? 1;
     const limit = input.limit ?? 50;
     const offset = (page - 1) * limit;
+    const trimmedName = input.name?.trim();
 
     // 条件を動的に構築
     const conditions = [];
@@ -46,6 +47,9 @@ export const findMembersUsecase = async (
     }
     if (input.inviteStatusId) {
       conditions.push(eq(schema.member.inviteStatusId, input.inviteStatusId));
+    }
+    if (trimmedName) {
+      conditions.push(ilike(schema.user.name, `%${trimmedName}%`));
     }
 
     const where = conditions.length > 0 ? and(...conditions) : undefined;

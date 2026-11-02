@@ -7,6 +7,7 @@ export type AdminSettingRolePageProps = {
   isLoading: boolean;
   isFetching: boolean;
   error: Error | null;
+  searchText: string;
   onSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSortChange: (sortBy: { field: string; order: "asc" | "desc" }) => void;
   sortState: { field: string; order: "asc" | "desc" } | null;

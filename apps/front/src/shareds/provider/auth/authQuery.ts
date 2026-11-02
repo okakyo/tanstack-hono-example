@@ -58,7 +58,7 @@ export const requireAdminAccess = async () => {
   const session = await requireAuthenticatedSession();
 
   if (!isAdminRole(session.user?.role)) {
-    throw notFound({routeId: rootRouteId});
+    throw notFound({ routeId: rootRouteId });
   }
 
   return session;

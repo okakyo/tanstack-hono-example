@@ -44,17 +44,21 @@ export const useCompanyData = (queryParams: {
     ],
     queryFn: async () => {
       return await executeWithAutoReauth(
-        (headers) =>
-          honoApiClient.companies.$get(
+        (headers) => {
+          const query = {
+            limit: "10",
+            page: String(queryParams.page),
+            ...(queryParams.searchText ? { name: queryParams.searchText } : {}),
+            sortBy: queryParams.sortBy.field,
+            orderBy: queryParams.sortBy.order,
+            ...(queryParams.currentCompanyId
+              ? { excludeCompanyId: queryParams.currentCompanyId }
+              : {}),
+          } as Record<string, string | undefined>;
+
+          return honoApiClient.companies.$get(
             {
-              query: {
-                limit: "10",
-                page: String(queryParams.page),
-                name: queryParams.searchText || undefined,
-                sortBy: queryParams.sortBy.field,
-                orderBy: queryParams.sortBy.order,
-                excludeCompanyId: queryParams.currentCompanyId || undefined,
-              },
+              query,
             },
             {
               headers: {
@@ -62,7 +66,8 @@ export const useCompanyData = (queryParams: {
                 "X-Tenant-Id": currentTenantId ?? "",
               },
             },
-          ),
+          );
+        },
         async (result) => {
           const getTotalCount = result.headers.get("X-Total-Count");
           const totalCount = getTotalCount

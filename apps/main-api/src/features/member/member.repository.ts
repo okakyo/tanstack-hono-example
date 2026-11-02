@@ -190,6 +190,7 @@ export const memberRepository = (db: Client) => {
       const query = client
         .select({ count: count() })
         .from(schema.member)
+        .leftJoin(schema.user, eq(schema.member.userId, schema.user.id))
         .$dynamic();
 
       const finalQuery = whereClause ? query.where(whereClause) : query;

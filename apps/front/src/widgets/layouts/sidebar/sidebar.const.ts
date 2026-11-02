@@ -54,7 +54,9 @@ export const ADMIN_SETTING_SIDEBAR_LIST: SidebarItem[] = [
 export const isSettingsSidebarRoute = (
   matchRoute: (options: { to: string; fuzzy?: boolean }) => unknown,
 ) => {
-  return SETTINGS_ROOT_PATHS.some((to) => Boolean(matchRoute({ to, fuzzy: true })));
+  return SETTINGS_ROOT_PATHS.some((to) =>
+    Boolean(matchRoute({ to, fuzzy: true })),
+  );
 };
 
 export const getSidebarItems = (

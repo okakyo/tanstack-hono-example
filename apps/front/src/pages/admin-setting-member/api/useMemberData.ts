@@ -30,52 +30,59 @@ export const useMemberData = (queryParams: {
     isLoading,
     error,
     isFetching,
-  } = useQuery<{ data: MembersGetResponse["data"]; totalCount: number }, Error>({
-    queryKey: [
-      "memberList",
-      currentTenantId ?? queryParams.tenantId,
-      queryParams.page,
-      queryParams.searchText,
-      queryParams.sortBy.field,
-      queryParams.sortBy.order,
-    ],
-    queryFn: async () => {
-      const response = await executeWithAutoReauth(
-        (headers) =>
-          honoApiClient.members.$get(
-            {
-              query: {
-                limit: "10",
-                page: String(queryParams.page),
-                sortBy: queryParams.sortBy.field,
-                orderBy: queryParams.sortBy.order,
+  } = useQuery<{ data: MembersGetResponse["data"]; totalCount: number }, Error>(
+    {
+      queryKey: [
+        "memberList",
+        currentTenantId ?? queryParams.tenantId,
+        queryParams.page,
+        queryParams.searchText,
+        queryParams.sortBy.field,
+        queryParams.sortBy.order,
+      ],
+      queryFn: async () => {
+        const response = await executeWithAutoReauth(
+          (headers) => {
+            const trimmedSearchText = queryParams.searchText.trim();
+            const query = {
+              limit: "10",
+              page: String(queryParams.page),
+              ...(trimmedSearchText ? { name: trimmedSearchText } : {}),
+              sortBy: queryParams.sortBy.field,
+              orderBy: queryParams.sortBy.order,
+            } as Record<string, string | undefined>;
+
+            return honoApiClient.members.$get(
+              {
+                query,
               },
-            },
-            { headers },
-          ),
-        async (result) => {
-          const getTotalCount = result.headers.get("X-Total-Count");
-          const totalCount = getTotalCount
-            ? Number.parseInt(getTotalCount, 10)
-            : 0;
-          const payload = await result.json();
+              { headers },
+            );
+          },
+          async (result) => {
+            const getTotalCount = result.headers.get("X-Total-Count");
+            const totalCount = getTotalCount
+              ? Number.parseInt(getTotalCount, 10)
+              : 0;
+            const payload = await result.json();
 
-          return {
-            data: payload.data ?? [],
-            totalCount,
-          };
-        },
-        {
-          tenantId: queryParams.tenantId,
-          defaultErrorMessage: "メンバー一覧の取得に失敗しました。",
-        },
-      );
+            return {
+              data: payload.data ?? [],
+              totalCount,
+            };
+          },
+          {
+            tenantId: queryParams.tenantId,
+            defaultErrorMessage: "メンバー一覧の取得に失敗しました。",
+          },
+        );
 
-      return response;
+        return response;
+      },
+      placeholderData: (previousData) => previousData,
+      enabled: !!queryParams.accessToken && !queryParams.authLoading,
     },
-    placeholderData: (previousData) => previousData,
-    enabled: !!queryParams.accessToken && !queryParams.authLoading,
-  });
+  );
 
   return {
     members: memberPage.data ?? [],

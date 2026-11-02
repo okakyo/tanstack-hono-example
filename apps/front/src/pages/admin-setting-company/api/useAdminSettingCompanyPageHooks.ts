@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useAuth } from "@/shareds/provider";
 import { isAdminRole } from "@/shareds/provider/auth/authorization";
@@ -14,7 +14,8 @@ import { useTableControls } from "./useControl";
 export const useAdminSettingCompanyPageHooks =
   (): AdminSettingCompanyPageProps => {
     const navigate = useNavigate();
-    const { queryParams, onSearch, onSortChange, onPageChange } =
+    const location = useLocation();
+    const { queryParams, searchText, onSearch, onSortChange, onPageChange } =
       useTableControls();
     const {
       isLoading: authLoading,
@@ -41,7 +42,11 @@ export const useAdminSettingCompanyPageHooks =
     );
 
     const onClickRow = (id: string) => {
-      navigate({ to: "/settings/companies/$id", params: { id } });
+      navigate({
+        to: "/settings/companies/$id",
+        params: { id },
+        search: location.search,
+      });
     };
 
     return {
@@ -55,6 +60,7 @@ export const useAdminSettingCompanyPageHooks =
       onSearch,
       onSortChange,
       sortState: queryParams.sortBy,
+      searchText,
       page: queryParams.page,
       onPageChange,
       onClickRow,

@@ -7,6 +7,7 @@ import { useAuthApiRequest } from "@/shareds/provider/auth/useAuthApiRequest";
  */
 export const useRoleData = (queryParams: {
   page: number;
+  searchText: string;
   sortBy: {
     field: string;
     order: "asc" | "desc";
@@ -36,6 +37,7 @@ export const useRoleData = (queryParams: {
       "memberRoleList",
       queryParams.tenantId,
       queryParams.page,
+      queryParams.searchText,
       queryParams.sortBy.field,
       queryParams.sortBy.order,
     ],
@@ -47,6 +49,7 @@ export const useRoleData = (queryParams: {
               query: {
                 limit: "10",
                 page: String(queryParams.page),
+                role: queryParams.searchText || undefined,
                 sortBy: queryParams.sortBy.field,
                 orderBy: queryParams.sortBy.order,
               },

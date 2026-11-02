@@ -25,6 +25,7 @@ export const getMembersQueryDtoSchema = v.object({
   companyId: v.optional(v.string()),
   memberRoleId: v.optional(v.string()),
   inviteStatusId: v.optional(v.string()),
+  name: v.optional(v.string()),
 });
 
 /**

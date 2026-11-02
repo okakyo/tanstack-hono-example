@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  getSidebarItems,
-  isSettingsSidebarRoute,
-} from "./sidebar.const";
+import { getSidebarItems, isSettingsSidebarRoute } from "./sidebar.const";
 
 describe("sidebar.const", () => {
   it("detects settings routes from the route matcher", () => {

@@ -42,6 +42,7 @@ export const AdminSettingMemberPageUi = (
             rounded="md"
             placeholder="ユーザー検索"
             aria-label="ユーザー検索"
+            value={props.searchText}
             onChange={props.onSearch}
           />
         </InputGroup>

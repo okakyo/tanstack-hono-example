@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useAuth } from "@/shareds/provider";
 import { isAdminRole } from "@/shareds/provider/auth/authorization";
@@ -15,7 +15,8 @@ import { useMemberMutations } from "./useMemberMutations";
 export const useAdminSettingMemberPageHooks =
   (): AdminSettingMemberPageProps => {
     const navigate = useNavigate();
-    const { queryParams, onSearch, onSortChange, onPageChange } =
+    const location = useLocation();
+    const { queryParams, searchText, onSearch, onSortChange, onPageChange } =
       useTableControls();
     const {
       isLoading: authLoading,
@@ -62,7 +63,11 @@ export const useAdminSettingMemberPageHooks =
     );
 
     const onClickRow = (id: string) => {
-      navigate({ to: "/settings/members/$id", params: { id } });
+      navigate({
+        to: "/settings/members/$id",
+        params: { id },
+        search: location.search,
+      });
     };
 
     return {
@@ -76,6 +81,7 @@ export const useAdminSettingMemberPageHooks =
       onSearch,
       onSortChange,
       sortState: queryParams.sortBy,
+      searchText,
       page: queryParams.page,
       onPageChange,
       onClickRow,
