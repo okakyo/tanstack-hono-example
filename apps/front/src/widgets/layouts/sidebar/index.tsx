@@ -1,33 +1,17 @@
 import { Box, Icon, Text } from "@chakra-ui/react";
 import { useMatchRoute } from "@tanstack/react-router";
 import { useAuth } from "@/shareds/provider";
-import { isGuestRole } from "@/shareds/provider/auth/authorization";
 import { BaseLink } from "@/shareds/ui/base-link";
 import {
-  ADMIN_SETTING_SIDEBAR_LIST,
-  COMMON_SIDEBAR_LIST,
+  getSidebarItems,
+  isSettingsSidebarRoute,
 } from "./sidebar.const";
 
 export const TheSidebar = () => {
   const matchRoute = useMatchRoute();
   const { user } = useAuth();
-  const isSettingsRoute =
-    matchRoute({ to: "/settings/companies", fuzzy: true }) ||
-    matchRoute({ to: "/settings/members", fuzzy: true }) ||
-    matchRoute({ to: "/settings/roles", fuzzy: true });
-
-  const sidebarList = isGuestRole(user?.role)
-    ? isSettingsRoute
-      ? []
-      : COMMON_SIDEBAR_LIST
-    : isSettingsRoute
-      ? ADMIN_SETTING_SIDEBAR_LIST
-      : COMMON_SIDEBAR_LIST;
-
-  // メインのサイドバー
-
-  // サイドバー
-
+  const isSettingsRoute = isSettingsSidebarRoute(matchRoute);
+  const sidebarList = getSidebarItems(user?.role, isSettingsRoute);
   const isActive = (to: string) => {
     return matchRoute({ to, fuzzy: true });
   };
