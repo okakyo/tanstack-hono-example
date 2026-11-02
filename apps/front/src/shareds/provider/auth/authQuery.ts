@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { notFound, redirect } from "@tanstack/react-router";
+import { notFound, redirect, rootRouteId } from "@tanstack/react-router";
 import { getTanstackQueryContext } from "@/shareds/config";
 import { isAdminRole } from "./authorization";
 import { authServerFn } from "./authServerFn";
@@ -58,7 +58,7 @@ export const requireAdminAccess = async () => {
   const session = await requireAuthenticatedSession();
 
   if (!isAdminRole(session.user?.role)) {
-    throw notFound();
+    throw notFound({routeId: rootRouteId});
   }
 
   return session;

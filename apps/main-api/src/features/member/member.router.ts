@@ -10,6 +10,7 @@ import {
   createTenantTransactionExecutor,
   TENANT_ID_HEADER,
 } from "@/middlewares/createRepository.middleware";
+import { validateMemberAdminAccessMiddleware } from "@/middlewares/validateMemberAdminAccess.middleware";
 import { validateTenantAccessMiddleware } from "@/middlewares/validateTenantAccess.middleware";
 import {
   createMemberRequestSchema,
@@ -40,96 +41,113 @@ export const memberRouter = (module: MemberModule) => {
 
       return c.json({ success: true, data: res.value, message: "" }, 200);
     })
-    .get("/", vValidator("query", getMembersQueryDtoSchema), async (c) => {
-      const query = c.req.valid("query");
-      const tenantId = c.get("tenantId");
-      const memberService = c.get("memberService");
+    .get(
+      "/",
+      vValidator("query", getMembersQueryDtoSchema),
+      validateMemberAdminAccessMiddleware,
+      async (c) => {
+        const query = c.req.valid("query");
+        const tenantId = c.get("tenantId");
+        const memberService = c.get("memberService");
 
-      const res = await memberService.findAll({
-        ...query,
-        tenantId,
-      });
-
-      if (res.isErr()) {
-        return errorResponse(c, res.error);
-      }
-
-      const { total, members } = res.value;
-      c.header("X-Total-Count", String(total));
-      c.header("Access-Control-Expose-Headers", "X-Total-Count");
-
-      return c.json({ success: true, data: members, message: "" }, 200);
-    })
-    .get("/:memberId", vValidator("param", memberIdParamSchema), async (c) => {
-      const { memberId } = c.req.valid("param");
-      const tenantId = c.get("tenantId");
-      const memberService = c.get("memberService");
-      const res = await memberService.findById({ id: memberId });
-
-      if (res.isErr()) {
-        return errorResponse(c, res.error);
-      }
-
-      if (res.value.tenantId !== tenantId) {
-        throw new HTTPException(404, { message: "Member not found" });
-      }
-
-      return c.json({ success: true, data: res.value, message: "" }, 200);
-    })
-    .post("/", vValidator("json", createMemberRequestSchema), async (c) => {
-      const body = c.req.valid("json");
-      const authUserId = c.get("authUserId");
-      const tenantId = c.get("tenantId");
-      const repository = c.get("repository");
-      const { memberRepository, tenantRepository, userRepository } = repository;
-      const memberService = c.get("memberService");
-
-      const tenant = await tenantRepository.findById(tenantId);
-      if (!tenant) {
-        throw new HTTPException(400, { message: "Tenant not found" });
-      }
-
-      const actor = await userRepository.findByAuthUserId(authUserId);
-      if (!actor) {
-        throw new HTTPException(404, { message: "User not found" });
-      }
-
-      const memberships = await memberRepository.find({
-        where: and(
-          eq(schema.member.userId, actor.id),
-          eq(schema.member.tenantId, tenantId),
-        ),
-      });
-
-      const actorMembership = memberships[0];
-      if (!actorMembership?.company?.id) {
-        throw new HTTPException(403, {
-          message: "Company membership not found",
+        const res = await memberService.findAll({
+          ...query,
+          tenantId,
         });
-      }
 
-      const user = await userRepository.findByEmail(body.email);
-      if (!user) {
-        throw new HTTPException(404, { message: "User not found" });
-      }
+        if (res.isErr()) {
+          return errorResponse(c, res.error);
+        }
 
-      const res = await memberService.create({
-        tenantId,
-        userId: user.id,
-        companyId: actorMembership.company.id,
-        memberRoleId: body.memberRoleId,
-        createdBy: authUserId,
-      });
+        const { total, members } = res.value;
+        c.header("X-Total-Count", String(total));
+        c.header("Access-Control-Expose-Headers", "X-Total-Count");
 
-      if (res.isErr()) {
-        return errorResponse(c, res.error);
-      }
+        return c.json({ success: true, data: members, message: "" }, 200);
+      },
+    )
+    .get(
+      "/:memberId",
+      vValidator("param", memberIdParamSchema),
+      validateMemberAdminAccessMiddleware,
+      async (c) => {
+        const { memberId } = c.req.valid("param");
+        const tenantId = c.get("tenantId");
+        const memberService = c.get("memberService");
+        const res = await memberService.findById({ id: memberId });
 
-      return c.json({ success: true, data: res.value, message: "" }, 201);
-    })
+        if (res.isErr()) {
+          return errorResponse(c, res.error);
+        }
+
+        if (res.value.tenantId !== tenantId) {
+          throw new HTTPException(404, { message: "Member not found" });
+        }
+
+        return c.json({ success: true, data: res.value, message: "" }, 200);
+      },
+    )
+    .post(
+      "/",
+      vValidator("json", createMemberRequestSchema),
+      validateMemberAdminAccessMiddleware,
+      async (c) => {
+        const body = c.req.valid("json");
+        const authUserId = c.get("authUserId");
+        const tenantId = c.get("tenantId");
+        const repository = c.get("repository");
+        const { memberRepository, tenantRepository, userRepository } =
+          repository;
+        const memberService = c.get("memberService");
+
+        const tenant = await tenantRepository.findById(tenantId);
+        if (!tenant) {
+          throw new HTTPException(400, { message: "Tenant not found" });
+        }
+
+        const actor = await userRepository.findByAuthUserId(authUserId);
+        if (!actor) {
+          throw new HTTPException(404, { message: "User not found" });
+        }
+
+        const memberships = await memberRepository.find({
+          where: and(
+            eq(schema.member.userId, actor.id),
+            eq(schema.member.tenantId, tenantId),
+          ),
+        });
+
+        const actorMembership = memberships[0];
+        if (!actorMembership?.company?.id) {
+          throw new HTTPException(403, {
+            message: "Company membership not found",
+          });
+        }
+
+        const user = await userRepository.findByEmail(body.email);
+        if (!user) {
+          throw new HTTPException(404, { message: "User not found" });
+        }
+
+        const res = await memberService.create({
+          tenantId,
+          userId: user.id,
+          companyId: actorMembership.company.id,
+          memberRoleId: body.memberRoleId,
+          createdBy: authUserId,
+        });
+
+        if (res.isErr()) {
+          return errorResponse(c, res.error);
+        }
+
+        return c.json({ success: true, data: res.value, message: "" }, 201);
+      },
+    )
     .put(
       "/:memberId",
       vValidator("json", updateMemberRequestSchema),
+      validateMemberAdminAccessMiddleware,
       async (c) => {
         const { memberId } = c.req.param();
         const body = c.req.valid("json");
@@ -190,7 +208,7 @@ export const memberRouter = (module: MemberModule) => {
         );
       },
     )
-    .delete("/:memberId", async (c) => {
+    .delete("/:memberId", validateMemberAdminAccessMiddleware, async (c) => {
       const { memberId } = c.req.param();
       const tenantId = c.get("tenantId");
       const memberService = c.get("memberService");

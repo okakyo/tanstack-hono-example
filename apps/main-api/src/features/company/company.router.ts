@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import * as v from "valibot";
 import type { AppEnv } from "@/app.env";
 import { errorResponse, handleResult } from "@/libs/utils/responseHelper";
+import { validateMemberAdminAccessMiddleware } from "@/middlewares/validateMemberAdminAccess.middleware";
 import { validateTenantAccessMiddleware } from "@/middlewares/validateTenantAccess.middleware";
 import type { CompanyModule } from "./company.module";
 import {
@@ -25,29 +26,35 @@ export const companyRouter = (module: CompanyModule) => {
   app.use("*", module);
 
   return app
-    .get("/", vValidator("query", getCompaniesQueryDtoSchema), async (c) => {
-      const query = c.req.valid("query");
-      const tenantId = c.get("tenantId");
-      const companyService = c.get("companyService");
+    .get(
+      "/",
+      vValidator("query", getCompaniesQueryDtoSchema),
+      validateMemberAdminAccessMiddleware,
+      async (c) => {
+        const query = c.req.valid("query");
+        const tenantId = c.get("tenantId");
+        const companyService = c.get("companyService");
 
-      const res = await companyService.find({
-        ...query,
-        tenantId,
-      });
+        const res = await companyService.find({
+          ...query,
+          tenantId,
+        });
 
-      if (res.isErr()) {
-        return errorResponse(c, res.error);
-      }
+        if (res.isErr()) {
+          return errorResponse(c, res.error);
+        }
 
-      const { count, data } = res.value;
-      c.header("X-Total-Count", String(count));
-      c.header("Access-Control-Expose-Headers", "X-Total-Count");
+        const { count, data } = res.value;
+        c.header("X-Total-Count", String(count));
+        c.header("Access-Control-Expose-Headers", "X-Total-Count");
 
-      return c.json({ success: true, data, message: "" }, 200);
-    })
+        return c.json({ success: true, data, message: "" }, 200);
+      },
+    )
     .get(
       "/:companyId",
       vValidator("param", companyIdParamSchema),
+      validateMemberAdminAccessMiddleware,
       async (c) => {
         const { companyId } = c.req.valid("param");
         const tenantId = c.get("tenantId");
@@ -58,21 +65,27 @@ export const companyRouter = (module: CompanyModule) => {
         return handleResult(c, res);
       },
     )
-    .post("/", vValidator("json", createCompanyDtoSchema), async (c) => {
-      const body = c.req.valid("json");
-      const tenantId = c.get("tenantId");
-      const companyService = c.get("companyService");
+    .post(
+      "/",
+      vValidator("json", createCompanyDtoSchema),
+      validateMemberAdminAccessMiddleware,
+      async (c) => {
+        const body = c.req.valid("json");
+        const tenantId = c.get("tenantId");
+        const companyService = c.get("companyService");
 
-      const res = await companyService.create({
-        ...body,
-        tenantId,
-      });
+        const res = await companyService.create({
+          ...body,
+          tenantId,
+        });
 
-      return handleResult(c, res, 201);
-    })
+        return handleResult(c, res, 201);
+      },
+    )
     .put(
       "/:companyId",
       vValidator("json", updateCompanyDtoSchema),
+      validateMemberAdminAccessMiddleware,
       async (c) => {
         const { companyId } = c.req.param();
         const body = c.req.valid("json");
@@ -88,7 +101,7 @@ export const companyRouter = (module: CompanyModule) => {
         return handleResult(c, res);
       },
     )
-    .delete("/:companyId", async (c) => {
+    .delete("/:companyId", validateMemberAdminAccessMiddleware, async (c) => {
       const { companyId } = c.req.param();
       const tenantId = c.get("tenantId");
       const companyService = c.get("companyService");

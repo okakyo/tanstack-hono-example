@@ -5,7 +5,7 @@ export const Route = createFileRoute(
   "/(authenticated)/_authenticated/settings",
 )({
   beforeLoad: async () => {
-    await !requireAdminAccess();
+    await requireAdminAccess();
   },
   component: SettingsRoute,
 });
